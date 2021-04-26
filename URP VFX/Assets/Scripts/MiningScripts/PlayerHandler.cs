@@ -11,16 +11,22 @@ public class PlayerHandler : MonoBehaviour
     public float speedMod;
     public float jumpMod;
 
-    public bool onGround;
-
-    public bool hoverAvailable = false;
-    public bool justJump = false;
+    bool onGround;
+    bool hoverAvailable = false;
+    bool justJump = false;
     public bool hovering = false;
+    bool firingLaser = false;
+
     public float hoverDelay = 1;
     public float hoverCeilingMod = 10f;
     float currentHoverCeiling;
 
+    public GameObject laserHole;
+    public GameObject laserBeam;
+    GameObject currentBeam;
+
     Rigidbody playerBod;
+
 
     private void Awake()
     {
@@ -31,14 +37,11 @@ public class PlayerHandler : MonoBehaviour
         controls = new PlayerControls();
         controls.Movement.Jump.started += ctx => Jump();
         controls.Movement.Jump.canceled += ctx => Drop();
-
+        controls.Movement.Laser.started += ctx => FireMainWeapon();
+        controls.Movement.Laser.canceled += ctx => EndMainWeapon();
 
         controls.Movement.Move.performed += ctx => move = ctx.ReadValue<Vector2>();
         controls.Movement.Move.canceled += ctx => move = Vector2.zero;
-    }
-    void Start()
-    {
-        
     }
 
     // Update is called once per frame
@@ -71,6 +74,7 @@ public class PlayerHandler : MonoBehaviour
             playerBod.velocity += new Vector3(0, Mathf.Abs(playerBod.velocity.y), 0);
             Debug.Log(currentHoverCeiling);
             playerMat.material.color = Color.green;
+            hovering = true;
         }
 
     }
@@ -83,6 +87,7 @@ public class PlayerHandler : MonoBehaviour
             playerBod.constraints = RigidbodyConstraints.FreezeRotation;
             playerBod.useGravity = true;
             justJump = false;
+            hovering = false;
         }
     }
 
@@ -94,6 +99,30 @@ public class PlayerHandler : MonoBehaviour
         hoverAvailable = true;
         playerMat.material.color = Color.yellow;
 
+    }
+    void FireMainWeapon()
+    {
+        if (hovering)
+        {
+            Debug.Log("Targeting Weapon");
+            RaycastHit hit;
+            Debug.DrawRay(gameObject.transform.position, transform.TransformDirection(Vector3.down)*transform.position.y, Color.red, 20);
+            if (Physics.Raycast(gameObject.transform.position, transform.TransformDirection(Vector3.down), out hit, Mathf.Infinity))
+            {
+                
+                Debug.Log("Target Acquired");
+                firingLaser = true;
+                //currentBeam =  Instantiate(laserBeam, gameObject.transform);
+                GameObject hole = Instantiate(laserHole, new Vector3(transform.position.x, hit.transform.position.y, transform.position.z), gameObject.transform.rotation);
+            }
+        }
+    }
+    void EndMainWeapon()
+    {
+        if (firingLaser)
+        {
+            //Destroy(currentBeam);
+        }
     }
 
     private void OnEnable()
@@ -113,6 +142,7 @@ public class PlayerHandler : MonoBehaviour
             onGround = true;
             hoverAvailable = false;
             justJump = false;
+            hovering = false;
         }
     }
 

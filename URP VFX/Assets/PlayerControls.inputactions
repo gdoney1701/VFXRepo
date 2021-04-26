@@ -22,7 +22,7 @@
                     "interactions": ""
                 },
                 {
-                    "name": "New action",
+                    "name": "Laser",
                     "type": "Button",
                     "id": "54cc3d68-5462-498e-85df-2c59bc8dc534",
                     "expectedControlType": "Button",
@@ -56,11 +56,11 @@
                 {
                     "name": "",
                     "id": "0daac0ff-62a1-4765-90b2-bd88abf8588f",
-                    "path": "",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "New action",
+                    "action": "Laser",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
