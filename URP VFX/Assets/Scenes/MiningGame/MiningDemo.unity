@@ -278,7 +278,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 116901915}
-  m_LocalRotation: {x: 0.2538188, y: -0.000000028826351, z: 0.000000007564391, w: 0.9672518}
+  m_LocalRotation: {x: 0.25381884, y: 1.5436667e-15, z: -9.153127e-16, w: 0.9672518}
   m_LocalPosition: {x: 0.50942695, y: 11, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -339,7 +339,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 954cf5af156285e4e8f57af413c5a266, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -397,8 +397,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   move: {x: 0, y: 0}
   speedMod: 10
-  jumpMod: 10
+  jumpMod: 30
+  onGround: 0
+  hoverAvailable: 0
+  justJump: 0
+  hovering: 0
   hoverDelay: 1
+  hoverCeilingMod: 10
 --- !u!54 &310828159
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -414,7 +419,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!1 &374397022
 GameObject:
   m_ObjectHideFlags: 3
@@ -679,7 +684,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1696250120}
-  m_LocalRotation: {x: 0.2538188, y: -0.000000028826351, z: 0.000000007564391, w: 0.9672518}
+  m_LocalRotation: {x: 0.25381884, y: 1.5436667e-15, z: -9.153127e-16, w: 0.9672518}
   m_LocalPosition: {x: 0.50942695, y: 11, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []

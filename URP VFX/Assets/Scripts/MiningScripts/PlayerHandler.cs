@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerHandler : MonoBehaviour
 {
     PlayerControls controls;
+    Renderer playerMat;
     public Vector2 move;
     public float speedMod;
     public float jumpMod;
@@ -23,12 +24,13 @@ public class PlayerHandler : MonoBehaviour
 
     private void Awake()
     {
+        playerMat = gameObject.GetComponent<Renderer>();
+        playerMat.material.color = Color.white;
         playerBod = gameObject.GetComponent<Rigidbody>();
         Physics.gravity = new Vector3(0,-30,0);
         controls = new PlayerControls();
         controls.Movement.Jump.started += ctx => Jump();
         controls.Movement.Jump.canceled += ctx => Drop();
-
 
 
         controls.Movement.Move.performed += ctx => move = ctx.ReadValue<Vector2>();
@@ -44,7 +46,7 @@ public class PlayerHandler : MonoBehaviour
     {
         Vector3 m = new Vector3(move.x, 0, move.y) * Time.deltaTime * speedMod;
         transform.Translate(m, Space.World);
-        if (hovering && Mathf.Approximately(transform.position.y, currentHoverCeiling))
+        if (hovering && transform.position.y >= currentHoverCeiling)
         {
             playerBod.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
         }
@@ -54,16 +56,21 @@ public class PlayerHandler : MonoBehaviour
     {
         if (!hoverAvailable && onGround)
         {
+            playerMat.material.color = Color.magenta;
             playerBod.velocity = new Vector3(0, jumpMod, 0);
             justJump = true;
             StartCoroutine(jumpCoolDownHandler());
-            //hoverAvailable = true;
         }
-        if (justJump && hoverAvailable)
+        if (!hovering && hoverAvailable)
         {
             playerBod.useGravity = false;
-            currentHoverCeiling = transform.position.y + hoverCeilingMod;
+            if (justJump)
+            {
+                currentHoverCeiling = transform.position.y + hoverCeilingMod;            
+            }
+            playerBod.velocity += new Vector3(0, Mathf.Abs(playerBod.velocity.y), 0);
             Debug.Log(currentHoverCeiling);
+            playerMat.material.color = Color.green;
         }
 
     }
@@ -72,18 +79,20 @@ public class PlayerHandler : MonoBehaviour
     {
         if (hoverAvailable && !onGround)
         {
+            playerMat.material.color = Color.blue;
             playerBod.constraints = RigidbodyConstraints.FreezeRotation;
             playerBod.useGravity = true;
+            justJump = false;
         }
     }
 
     IEnumerator jumpCoolDownHandler()
     {
-        if (!onGround)
-        {
-            yield return new WaitForSeconds(hoverDelay);       
-        }
+        Debug.Log("Jumping Cooldown");
+        yield return new WaitForSeconds(hoverDelay);
+        Debug.Log("Cooldown Complete");
         hoverAvailable = true;
+        playerMat.material.color = Color.yellow;
 
     }
 
@@ -100,6 +109,7 @@ public class PlayerHandler : MonoBehaviour
     {
         if (collision.collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
+            playerMat.material.color = Color.white;
             onGround = true;
             hoverAvailable = false;
             justJump = false;
