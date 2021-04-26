@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Cinemachine;
 
 public class PlayerHandler : MonoBehaviour
 {
     PlayerControls controls;
+    public CinemachineVirtualCamera followCam;
+    public CinemachineVirtualCamera overheadCam;
     Renderer playerMat;
-    public Vector2 move;
+    Vector2 move;
     public float speedMod;
     public float jumpMod;
 
@@ -48,7 +51,19 @@ public class PlayerHandler : MonoBehaviour
     void Update()
     {
         Vector3 m = new Vector3(move.x, 0, move.y) * Time.deltaTime * speedMod;
-        transform.Translate(m, Space.World);
+        if (onGround)
+        {        
+            transform.Translate(m, Space.World);
+        }
+        if (!onGround && !hovering)
+        {
+            playerBod.velocity += m*1.5f;
+        }
+        if (hovering)
+        {
+            playerBod.velocity += m * 3;
+        }
+        
         if (hovering && transform.position.y >= currentHoverCeiling)
         {
             playerBod.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
@@ -75,6 +90,8 @@ public class PlayerHandler : MonoBehaviour
             Debug.Log(currentHoverCeiling);
             playerMat.material.color = Color.green;
             hovering = true;
+            playerBod.drag = 5;
+            overheadCam.gameObject.SetActive(true);
         }
 
     }
@@ -88,6 +105,9 @@ public class PlayerHandler : MonoBehaviour
             playerBod.useGravity = true;
             justJump = false;
             hovering = false;
+            playerBod.drag = 0;
+            //overheadCam.gameObject.SetActive(false);
+            overheadCam.gameObject.SetActive(false);
         }
     }
 
@@ -143,6 +163,7 @@ public class PlayerHandler : MonoBehaviour
             hoverAvailable = false;
             justJump = false;
             hovering = false;
+            overheadCam.gameObject.SetActive(false);
         }
     }
 
