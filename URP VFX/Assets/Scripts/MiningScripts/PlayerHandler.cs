@@ -10,24 +10,25 @@ public class PlayerHandler : MonoBehaviour
     public float speedMod;
     public float jumpMod;
 
-    bool onGround;
+    public bool onGround;
 
-    bool hoverMode = false;
-    bool justJump = false;
+    public bool hoverAvailable = false;
+    public bool justJump = false;
+    public bool hovering = false;
     public float hoverDelay = 1;
+    public float hoverCeilingMod = 10f;
+    float currentHoverCeiling;
+
+    Rigidbody playerBod;
 
     private void Awake()
     {
+        playerBod = gameObject.GetComponent<Rigidbody>();
         Physics.gravity = new Vector3(0,-30,0);
         controls = new PlayerControls();
-        if (!hoverMode)
-        {
-            controls.Movement.Jump.performed += ctx => Jump();
-        }
-        else
-        {
-            controls.Movement.Jump.started += ctx => Hover();
-        }
+        controls.Movement.Jump.started += ctx => Jump();
+        controls.Movement.Jump.canceled += ctx => Drop();
+
 
 
         controls.Movement.Move.performed += ctx => move = ctx.ReadValue<Vector2>();
@@ -43,26 +44,46 @@ public class PlayerHandler : MonoBehaviour
     {
         Vector3 m = new Vector3(move.x, 0, move.y) * Time.deltaTime * speedMod;
         transform.Translate(m, Space.World);
+        if (hovering && Mathf.Approximately(transform.position.y, currentHoverCeiling))
+        {
+            playerBod.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+        }
 
     }
     void Jump()
     {
-        gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0, jumpMod, 0);
-        justJump = true;
-        StartCoroutine(jumpCoolDownHandler()); 
+        if (!hoverAvailable && onGround)
+        {
+            playerBod.velocity = new Vector3(0, jumpMod, 0);
+            justJump = true;
+            StartCoroutine(jumpCoolDownHandler());
+            //hoverAvailable = true;
+        }
+        if (justJump && hoverAvailable)
+        {
+            playerBod.useGravity = false;
+            currentHoverCeiling = transform.position.y + hoverCeilingMod;
+            Debug.Log(currentHoverCeiling);
+        }
+
     }
-    void Hover()
+
+    void Drop()
     {
-        Debug.Log("Hover Mode Active");
+        if (hoverAvailable && !onGround)
+        {
+            playerBod.constraints = RigidbodyConstraints.FreezeRotation;
+            playerBod.useGravity = true;
+        }
     }
 
     IEnumerator jumpCoolDownHandler()
     {
         if (!onGround)
         {
-            yield return new WaitForSeconds(hoverDelay);
-            hoverMode = true;
+            yield return new WaitForSeconds(hoverDelay);       
         }
+        hoverAvailable = true;
 
     }
 
@@ -80,7 +101,7 @@ public class PlayerHandler : MonoBehaviour
         if (collision.collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             onGround = true;
-            hoverMode = false;
+            hoverAvailable = false;
             justJump = false;
         }
     }
