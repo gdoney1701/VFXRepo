@@ -41,6 +41,14 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Prospect"",
+                    ""type"": ""Button"",
+                    ""id"": ""327aea2c-503a-49bc-9c62-4b1a76ad885c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -76,6 +84,17 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""action"": ""Laser"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fd573f25-c033-47cc-bca8-6341e34b93a7"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Prospect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -87,6 +106,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_Movement_Move = m_Movement.FindAction("Move", throwIfNotFound: true);
         m_Movement_Jump = m_Movement.FindAction("Jump", throwIfNotFound: true);
         m_Movement_Laser = m_Movement.FindAction("Laser", throwIfNotFound: true);
+        m_Movement_Prospect = m_Movement.FindAction("Prospect", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -139,6 +159,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_Movement_Move;
     private readonly InputAction m_Movement_Jump;
     private readonly InputAction m_Movement_Laser;
+    private readonly InputAction m_Movement_Prospect;
     public struct MovementActions
     {
         private @PlayerControls m_Wrapper;
@@ -146,6 +167,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Move => m_Wrapper.m_Movement_Move;
         public InputAction @Jump => m_Wrapper.m_Movement_Jump;
         public InputAction @Laser => m_Wrapper.m_Movement_Laser;
+        public InputAction @Prospect => m_Wrapper.m_Movement_Prospect;
         public InputActionMap Get() { return m_Wrapper.m_Movement; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -164,6 +186,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Laser.started -= m_Wrapper.m_MovementActionsCallbackInterface.OnLaser;
                 @Laser.performed -= m_Wrapper.m_MovementActionsCallbackInterface.OnLaser;
                 @Laser.canceled -= m_Wrapper.m_MovementActionsCallbackInterface.OnLaser;
+                @Prospect.started -= m_Wrapper.m_MovementActionsCallbackInterface.OnProspect;
+                @Prospect.performed -= m_Wrapper.m_MovementActionsCallbackInterface.OnProspect;
+                @Prospect.canceled -= m_Wrapper.m_MovementActionsCallbackInterface.OnProspect;
             }
             m_Wrapper.m_MovementActionsCallbackInterface = instance;
             if (instance != null)
@@ -177,6 +202,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Laser.started += instance.OnLaser;
                 @Laser.performed += instance.OnLaser;
                 @Laser.canceled += instance.OnLaser;
+                @Prospect.started += instance.OnProspect;
+                @Prospect.performed += instance.OnProspect;
+                @Prospect.canceled += instance.OnProspect;
             }
         }
     }
@@ -186,5 +214,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnLaser(InputAction.CallbackContext context);
+        void OnProspect(InputAction.CallbackContext context);
     }
 }

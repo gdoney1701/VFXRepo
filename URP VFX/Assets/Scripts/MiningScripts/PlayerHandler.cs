@@ -7,6 +7,7 @@ using Cinemachine;
 public class PlayerHandler : MonoBehaviour
 {
     PlayerControls controls;
+    ImpactWaveHandler waveHandler;
     public CinemachineVirtualCamera followCam;
     public CinemachineVirtualCamera overheadCam;
     Renderer playerMat;
@@ -28,11 +29,17 @@ public class PlayerHandler : MonoBehaviour
     public GameObject laserBeam;
     GameObject currentBeam;
 
+    public float maxDownThrust = 10;
+    float currentThrustStored = 0;
+    float thrustTime = 0;
+    bool thrustCharge = false;
+
     Rigidbody playerBod;
 
 
     private void Awake()
     {
+        waveHandler = gameObject.GetComponent<ImpactWaveHandler>();
         playerMat = gameObject.GetComponent<Renderer>();
         playerMat.material.color = Color.white;
         playerBod = gameObject.GetComponent<Rigidbody>();
@@ -45,12 +52,26 @@ public class PlayerHandler : MonoBehaviour
 
         controls.Movement.Move.performed += ctx => move = ctx.ReadValue<Vector2>();
         controls.Movement.Move.canceled += ctx => move = Vector2.zero;
+
+        controls.Movement.Prospect.started += ctx => DownSmash(true);
+        controls.Movement.Prospect.canceled += ctx => DownSmash(false);
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         Vector3 m = new Vector3(move.x, 0, move.y) * Time.deltaTime * speedMod;
+        if (thrustCharge)
+        {
+
+            thrustTime += Time.deltaTime;
+            if (currentThrustStored < maxDownThrust)
+            {
+                currentThrustStored += Mathf.Pow(thrustTime, 2);
+                overheadCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>().m_AmplitudeGain = Mathf.Lerp(0, 4, currentThrustStored / maxDownThrust);
+                overheadCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>().m_FrequencyGain = Mathf.Lerp(0, 10, currentThrustStored / maxDownThrust);
+            }
+        }
         if (onGround)
         {        
             transform.Translate(m, Space.World);
@@ -66,8 +87,9 @@ public class PlayerHandler : MonoBehaviour
         
         if (hovering && transform.position.y >= currentHoverCeiling)
         {
-            playerBod.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+            playerBod.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;
         }
+        
 
     }
     void Jump()
@@ -87,13 +109,36 @@ public class PlayerHandler : MonoBehaviour
                 currentHoverCeiling = transform.position.y + hoverCeilingMod;            
             }
             playerBod.velocity += new Vector3(0, Mathf.Abs(playerBod.velocity.y), 0);
-            Debug.Log(currentHoverCeiling);
             playerMat.material.color = Color.green;
             hovering = true;
             playerBod.drag = 5;
             overheadCam.gameObject.SetActive(true);
         }
 
+    }
+    void DownSmash(bool charging)
+    {
+        if (hovering)
+        {
+            if (charging)
+            {
+                playerBod.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+                Debug.Log("Charging");
+                thrustCharge = true;
+
+            }
+            else
+            {
+                thrustCharge = false;
+                float velToAdd = currentThrustStored;
+                Drop();
+                waveHandler.expectImpact = true;
+                playerBod.velocity += new Vector3(0, -velToAdd, 0);
+                overheadCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>().m_AmplitudeGain = 0;
+                overheadCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>().m_FrequencyGain = 0;
+            }
+
+        }
     }
 
     void Drop()
@@ -106,16 +151,15 @@ public class PlayerHandler : MonoBehaviour
             justJump = false;
             hovering = false;
             playerBod.drag = 0;
-            //overheadCam.gameObject.SetActive(false);
             overheadCam.gameObject.SetActive(false);
+            currentThrustStored = 0;
+            thrustTime = 0;
         }
     }
 
     IEnumerator jumpCoolDownHandler()
     {
-        Debug.Log("Jumping Cooldown");
         yield return new WaitForSeconds(hoverDelay);
-        Debug.Log("Cooldown Complete");
         hoverAvailable = true;
         playerMat.material.color = Color.yellow;
 
@@ -124,13 +168,10 @@ public class PlayerHandler : MonoBehaviour
     {
         if (hovering)
         {
-            Debug.Log("Targeting Weapon");
             RaycastHit hit;
             Debug.DrawRay(gameObject.transform.position, transform.TransformDirection(Vector3.down)*transform.position.y, Color.red, 20);
             if (Physics.Raycast(gameObject.transform.position, transform.TransformDirection(Vector3.down), out hit, Mathf.Infinity))
             {
-                
-                Debug.Log("Target Acquired");
                 firingLaser = true;
                 //currentBeam =  Instantiate(laserBeam, gameObject.transform);
                 GameObject hole = Instantiate(laserHole, new Vector3(transform.position.x, hit.transform.position.y, transform.position.z), gameObject.transform.rotation);
@@ -164,6 +205,8 @@ public class PlayerHandler : MonoBehaviour
             justJump = false;
             hovering = false;
             overheadCam.gameObject.SetActive(false);
+            currentThrustStored = 0;
+            thrustTime = 0;
         }
     }
 

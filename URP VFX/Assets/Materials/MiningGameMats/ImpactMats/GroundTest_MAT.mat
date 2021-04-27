@@ -20,17 +20,18 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Floats:
-    - _Emission_Multiplier: 1
+    - _Alpha: 1
+    - _Emission_Multiplier: 0.14
     - _Global_Emission: 0
     - _Shockwave_Distance: 5
     - _Shockwave_Enabled: 0
     - _Shockwave_Intensity: 5
     - _Shockwave_Material: 1
     - _Shockwave_MaxDistance: 20
-    - _Shockwave_Smoothing: 3.58
-    - _Shockwave_Width: 1.07
+    - _Shockwave_Smoothing: 3.6
+    - _Shockwave_Width: 0.57
     m_Colors:
     - _Color: {r: 0.46290395, g: 0.8207547, b: 0.45296368, a: 0}
-    - _Emission: {r: 0, g: 1.7568628, b: 2.3843138, a: 0}
+    - _Emission: {r: 0, g: 0.88007396, b: 1.1921569, a: 0}
     - _Shockwave_Position: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []
