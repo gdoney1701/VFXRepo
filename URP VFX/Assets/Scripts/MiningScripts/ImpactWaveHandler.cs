@@ -30,18 +30,20 @@ public class ImpactWaveHandler : MonoBehaviour
             effectMaxDistance += 3 * Mathf.Log(shockwaveIntensity);
             Debug.Log("Impact Calibrating");
             int layerMask = 1 << 9;
-            Collider[] collisionPlanes = Physics.OverlapSphere(transform.position, effectMaxDistance, layerMask);
+            Collider[] collisionPlanes = Physics.OverlapSphere(transform.position, effectMaxDistance);
             Debug.Log(collisionPlanes.Length);
             foreach (Collider groundObject in collisionPlanes)
             {
-                Renderer localShader = groundObject.GetComponent<Renderer>();
-                affectedShaders.Add(localShader);
-                localShader.material.SetFloat("_Shockwave_Distance", 0);
-                localShader.material.SetVector("_Shockwave_Position", transform.position);
-                localShader.material.SetFloat("_Shockwave_Enabled", 1);
-                localShader.material.SetFloat("_Shockwave_MaxDistance", effectMaxDistance);
-                localShader.material.SetFloat("_Shockwave_Intensity", shockwaveIntensity);
-
+                if (groundObject.tag == "Deformable")
+                {
+                    Renderer localShader = groundObject.GetComponent<Renderer>();
+                    affectedShaders.Add(localShader);
+                    localShader.material.SetFloat("_Shockwave_Distance", 0);
+                    localShader.material.SetVector("_Shockwave_Position", transform.position);
+                    localShader.material.SetFloat("_Shockwave_Enabled", 1);
+                    localShader.material.SetFloat("_Shockwave_MaxDistance", effectMaxDistance);
+                    localShader.material.SetFloat("_Shockwave_Intensity", shockwaveIntensity);
+                }
             }
             pulseActive = true;
             t = 0;
